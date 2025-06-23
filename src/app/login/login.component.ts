@@ -9,33 +9,32 @@ import { environment } from '../../environments/environment';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
-export class LoginComponent implements OnInit{
+export class LoginComponent implements OnInit {
   config = {
     auth: {
       clientId: environment.CLIENT_ID,
-      authority:
-        environment.AUTHORITY,
+      authority: environment.AUTHORITY,
       redirectUri: environment.REDIRECT_URI,
       postLogoutRedirectUri: environment.REDIRECT_URI,
     },
   };
   msalInstance = new PublicClientApplication(this.config);
-  account : AccountInfo = {} as AccountInfo;
+  account: AccountInfo = {} as AccountInfo;
   private router: Router = {} as Router;
-  constructor(){
+  constructor() {
     this.router = inject(Router);
   }
   async ngOnInit() {
-    
+
     await this.msalInstance.initialize();
     await this.msalInstance.handleRedirectPromise();
   }
-  
-  
+
+
   async login() {
-    try{
+    try {
       const loginRequest = {
-        scopes: ["User.Read"], 
+        scopes: ["User.Read"],
         prompt: "login"
       };
       await this.msalInstance.loginPopup(loginRequest);
@@ -51,18 +50,15 @@ export class LoginComponent implements OnInit{
       const resolvedRes = response.accessToken;
       console.log(resolvedRes);
     }
-    catch(e){
+    catch (e) {
       console.log(e);
     };
-    
+
   }
 
-  async logout(){
-    if (!this.account){
-      return;
-    }
+  async logout() {
     sessionStorage.clear();
     this.router.navigate(['/']);
-    
+
   }
 }
