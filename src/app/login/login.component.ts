@@ -2,6 +2,8 @@ import { Component, inject, OnInit } from '@angular/core';
 import { AccountInfo, PublicClientApplication } from '@azure/msal-browser';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { tap } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -21,21 +23,24 @@ export class LoginComponent implements OnInit {
   msalInstance = new PublicClientApplication(this.config);
   account: AccountInfo = {} as AccountInfo;
   private router: Router = {} as Router;
+  private accessToken: string = '';
+  public canFetchData: boolean = false;
+  private httpClient: HttpClient;
+
   constructor() {
     this.router = inject(Router);
+    this.httpClient = inject(HttpClient);
   }
   async ngOnInit() {
-
     await this.msalInstance.initialize();
     await this.msalInstance.handleRedirectPromise();
   }
 
-
   async login() {
     try {
       const loginRequest = {
-        scopes: ["User.Read"],
-        prompt: "login"
+        scopes: [environment.SCOPES],
+        prompt: 'login',
       };
       await this.msalInstance.loginPopup(loginRequest);
       const myAccounts = this.msalInstance.getAllAccounts();
@@ -46,19 +51,48 @@ export class LoginComponent implements OnInit {
         account: account,
         scopes: [environment.SCOPES],
       });
-
-      const resolvedRes = response.accessToken;
-      console.log(resolvedRes);
-    }
-    catch (e) {
+      this.accessToken = response.accessToken;
+      this.canFetchData = true;
+    } catch (e) {
       console.log(e);
-    };
-
+    }
   }
 
   async logout() {
     sessionStorage.clear();
     this.router.navigate(['/']);
+  }
 
+  fetchData(): void {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.accessToken}`,
+    });
+
+    const params = new HttpParams().set(
+      'code',
+      environment.CODE
+    );
+
+    this.httpClient
+      .get<any>(
+        'http://localhost:7017/api/GetPartitionedCategory',
+        { 
+          headers: headers, 
+          params: params 
+        }
+      )
+      .pipe(
+        tap({
+          next: (data) => {
+            console.log(data);
+          },
+          error: (err) => {
+            console.error('Error fetching users:', err);
+          },
+        })
+      )
+      .subscribe((data) => {
+        console.log(data);
+      });
   }
 }

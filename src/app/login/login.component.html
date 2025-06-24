@@ -4,5 +4,8 @@
 <main>
   <button (click)="login()">Login</button>
   <button (click)="logout()">Logout</button>
+  @if (canFetchData){
+    <button (click)="fetchData()">fetch data</button>
+  }
 </main>
 
