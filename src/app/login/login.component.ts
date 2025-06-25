@@ -52,6 +52,7 @@ export class LoginComponent implements OnInit {
         scopes: [environment.SCOPES],
       });
       this.accessToken = response.accessToken;
+      localStorage.setItem('token', this.accessToken);
       this.canFetchData = true;
     } catch (e) {
       console.log(e);
@@ -60,6 +61,7 @@ export class LoginComponent implements OnInit {
 
   async logout() {
     sessionStorage.clear();
+    localStorage.clear();
     this.router.navigate(['/']);
   }
 
@@ -68,17 +70,11 @@ export class LoginComponent implements OnInit {
       Authorization: `Bearer ${this.accessToken}`,
     });
 
-    const params = new HttpParams().set(
-      'code',
-      environment.CODE
-    );
-
     this.httpClient
       .get<any>(
-        'http://localhost:7017/api/GetPartitionedCategory',
+        environment.FETCH_CATEGORIES_URL,
         { 
           headers: headers, 
-          params: params 
         }
       )
       .pipe(
