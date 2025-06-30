@@ -64,31 +64,4 @@ export class LoginComponent implements OnInit {
     localStorage.clear();
     this.router.navigate(['/']);
   }
-
-  fetchData(): void {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${this.accessToken}`,
-    });
-
-    this.httpClient
-      .get<any>(
-        environment.FETCH_CATEGORIES_URL,
-        { 
-          headers: headers, 
-        }
-      )
-      .pipe(
-        tap({
-          next: (data) => {
-            console.log(data);
-          },
-          error: (err) => {
-            console.error('Error fetching users:', err);
-          },
-        })
-      )
-      .subscribe((data) => {
-        console.log(data);
-      });
-  }
 }
